@@ -1,5 +1,5 @@
 # pagila-hw3
-[![](https://github.com/mikeizbicki/pagila-hw3/workflows/tests/badge.svg)](https://github.com/mikeizbicki/pagila-hw3/actions?query=workflow%3Atests)
+[![](https://github.com/0marJim/pagila-hw3/workflows/tests/badge.svg)](https://github.com/0marJim/pagila-hw3/actions?query=workflow%3Atests)
 
 ## Tasks
 
@@ -35,7 +35,7 @@
     Also, since the dataset has customers from many different countries,
     it should probably have stores in many different countries as well.
 
-    Fortunately, the pagila maintainers have also realized this problem and updated the dataset. 
+    Fortunately, the pagila maintainers have also realized this problem and updated the dataset.
     But since the dataset is version-controlled as a git submodule,
     we don't yet have access to this new data.
     And this is a good thing!
