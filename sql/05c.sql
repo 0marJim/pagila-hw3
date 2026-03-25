@@ -9,12 +9,13 @@ SELECT title
 FROM film
 JOIN film_actor USING (film_id)
 WHERE actor_id IN (
-    -- Subquery: Find all actors in the three reference movies
+    -- Get the unique set of actors from the 3 reference movies
     SELECT actor_id
     FROM film_actor
     JOIN film USING (film_id)
     WHERE title IN ('ACADEMY DINOSAUR', 'AGENT TRUMAN', 'AMERICAN CIRCUS')
 )
+-- Group by film_id to ensure each movie is evaluated individually
 GROUP BY film_id, title
 HAVING COUNT(*) >= 3
 ORDER BY title;
