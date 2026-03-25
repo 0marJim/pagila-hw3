@@ -10,32 +10,27 @@
  * My solution uses the `rank` window function.
  */
 WITH film_revenue AS (
-    SELECT
-        i.film_id,
-        SUM(p.amount) AS revenue
+    SELECT i.film_id, SUM(p.amount) AS revenue
     FROM payment p
-    JOIN rental r USING (rental_id)
-    JOIN inventory i USING (inventory_id)
+    JOIN rental r ON p.rental_id = r.rental_id
+    JOIN inventory i ON r.inventory_id = i.inventory_id
     GROUP BY i.film_id
-)
-
-SELECT *
-FROM (
+),
+actor_films AS (
     SELECT
         a.actor_id,
         a.first_name,
         a.last_name,
         f.film_id,
         f.title,
-        RANK() OVER (
-            PARTITION BY a.actor_id
-            ORDER BY fr.revenue DESC
-        ) AS rank,
+        RANK() OVER (PARTITION BY a.actor_id ORDER BY fr.revenue DESC) as rank,
         fr.revenue
     FROM actor a
-    JOIN film_actor fa USING (actor_id)
-    JOIN film f USING (film_id)
-    JOIN film_revenue fr USING (film_id)
-) ranked
+    JOIN film_actor fa ON a.actor_id = fa.actor_id
+    JOIN film f ON fa.film_id = f.film_id
+    JOIN film_revenue fr ON f.film_id = fr.film_id
+)
+SELECT actor_id, first_name, last_name, film_id, title, rank, revenue
+FROM actor_films
 WHERE rank <= 3
-ORDER BY actor_id, rank;
+ORDER BY actor_id ASC, rank ASC, title ASC;
