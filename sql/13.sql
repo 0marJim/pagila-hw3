@@ -10,27 +10,41 @@
  * My solution uses the `rank` window function.
  */
 WITH film_revenue AS (
-    SELECT i.film_id, SUM(p.amount) AS revenue
-    FROM payment p
-    JOIN rental r ON p.rental_id = r.rental_id
-    JOIN inventory i ON r.inventory_id = i.inventory_id
-    GROUP BY i.film_id
-),
-actor_films AS (
+    -- Calculate revenue for ALL films, even those with 0 payments
+    SELECT
+        f.film_id,
+        f.title,
+        COALESCE(SUM(p.amount), 0.00) AS revenue
+    FROM film f
+    LEFT JOIN inventory i ON f.film_id = i.film_id
+    LEFT JOIN rental r ON i.inventory_id = r.inventory_id
+    LEFT JOIN payment p ON r.rental_id = p.rental_id
+    GROUP BY f.film_id, f.title
+)
+SELECT
+    actor_id,
+    first_name,
+    last_name,
+    film_id,
+    title,
+    rank,
+    revenue
+FROM (
     SELECT
         a.actor_id,
         a.first_name,
         a.last_name,
-        f.film_id,
-        f.title,
-        RANK() OVER (PARTITION BY a.actor_id ORDER BY fr.revenue DESC) as rank,
+        fr.film_id,
+        fr.title,
+        -- Unique tie-breaker (title) ensures deterministic ranks and row counts
+        RANK() OVER (
+            PARTITION BY a.actor_id
+            ORDER BY fr.revenue DESC, fr.title ASC
+        ) as rank,
         fr.revenue
     FROM actor a
     JOIN film_actor fa ON a.actor_id = fa.actor_id
-    JOIN film f ON fa.film_id = f.film_id
-    JOIN film_revenue fr ON f.film_id = fr.film_id
-)
-SELECT actor_id, first_name, last_name, film_id, title, rank, revenue
-FROM actor_films
+    JOIN film_revenue fr ON fa.film_id = fr.film_id
+) ranked
 WHERE rank <= 3
-ORDER BY actor_id ASC, rank ASC, title ASC;
+ORDER BY actor_id, rank, title;
